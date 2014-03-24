@@ -19,7 +19,7 @@ var
     var ret = err.stack || err.toString(),
       cause;
 
-    if (err.cause && typeof (err.cause) === 
+    if (err.cause && typeof (err.cause) ===
         'function') {
       cause = err.cause();
       if (cause) {
@@ -33,10 +33,10 @@ var
   // To create a custom Bunyan serializer,
   // just return the desired object
   // serialization.
-  // 
+  //
   // Regardless of your serialization settings,
   // all bunyan messages automatically include:
-  // 
+  //
   // * App name
   // * hostname
   // * pid (Process ID)
@@ -77,7 +77,7 @@ var
     },
     err: function errSerializer(err) {
       if (!err || !err.stack) {
-        return err;      
+        return err;
       }
 
       return {
@@ -87,26 +87,25 @@ var
           code: err.code,
           signal: err.signal,
           requestId: err.requestId
-      };    
+      };
     }
   },
 
   // Bunyan offers lots of other options,
   // including extensible output stream types.
-  // 
+  //
   // You might be interested in
   // node-bunyan-syslog, in particular.
   defaults = {
     name: 'unnamed app',
-    serializers: mixIn({}, bunyan.stdSerializers,
-      serializers)
+    serializers: mixIn({}, bunyan.stdSerializers, serializers)
   },
 
   /**
    * Take bunyan options, monkey patch request
    * and response objects for better logging,
    * and return a logger instance.
-   * 
+   *
    * @param  {object}  options See bunyan docs
    * @param  {boolean} options.logParams
    *         Pass true to log request parameters
@@ -116,8 +115,17 @@ var
    *                    (See below)
    */
   createLogger = function (options) {
-    var settings = mixIn({}, defaults, options),
-      log = bunyan.createLogger(settings);
+    if (options.constructor.name == 'Logger') {
+      var log = options.child(
+        {
+          serializers: mixIn({}, bunyan.stdSerializers, serializers),
+          src: false
+        },
+        false)
+    } else {
+      var settings = mixIn({}, defaults, options)
+      var log = bunyan.createLogger(settings);
+    }
 
     log.requestLogger = function
         createRequestLogger() {
@@ -132,13 +140,13 @@ var
         req.requestId = cuid();
 
         // Log the request
-        log.info({req: req});
+        log.debug({req: req});
 
         // Make sure responses get logged, too:
         req.on('end', function () {
           res.responseTime = new Date() - startTime;
           res.requestId = req.requestId;
-          log.info({res: res});
+          log.debug({res: res});
         });
 
         next();
@@ -162,15 +170,15 @@ var
           delete err.stack;
         }
 
-        log.error({err: err});
+        log.error({req: req, err: err});
         next(err);
       };
     };
 
     // Tracking pixel / web bug
-    // 
+    //
     // Using a 1x1 transparent gif allows you to
-    // use the logger in emails or embed the 
+    // use the logger in emails or embed the
     // tracking pixel on third party sites without
     // requiring to JavaScript.
     log.route = function route() {
