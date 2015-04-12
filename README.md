@@ -1,6 +1,8 @@
 bunyan-request-logger
 =====================
 
+[![Join the chat at https://gitter.im/nixplay/bunyan-request-logger](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/nixplay/bunyan-request-logger?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Automated request logging connect middleware for Express. Powered by Bunyan.
 
 
